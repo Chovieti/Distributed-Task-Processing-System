@@ -1,5 +1,6 @@
 package com.example.task_system.service;
 
+import com.example.task_system.dto.CreateTaskRequest;
 import com.example.task_system.model.Task;
 import com.example.task_system.model.TaskStatus;
 import com.example.task_system.repository.TaskRepository;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.UUID;
 
+
+// TODO Может затем выделить интерфейс причем может даже два, один для работы с эндпоинтами контролера, другой для работы с воркерами?
 @Service
 public class TaskService {
     private final TaskRepository repository;
@@ -18,7 +21,9 @@ public class TaskService {
     }
 
     @Transactional
-    public void createTask(Task task) {
+    public void createTask(CreateTaskRequest request) {
+        Task task = new Task();
+        task.setPayload(request.payload());
         repository.save(task);
     }
 
@@ -40,6 +45,8 @@ public class TaskService {
         int update = repository.updateStatusById(task.getId(), TaskStatus.PENDING, TaskStatus.PROCESSING);
         if (update == 0) return null;
         task.setStatus(TaskStatus.PROCESSING);
+        update = repository.updateProcessingStartedAt(task.getId(), TaskStatus.PROCESSING);
+        if (update == 0) return null;
         return task;
     }
 }

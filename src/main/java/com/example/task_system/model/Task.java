@@ -23,12 +23,32 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String payload;
 
-    @Column(name = "created_at", insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", nullable = false, updatable = false)
+    @Column(name = "retry_count", nullable = false)
+    private int count;
+    // Время создания таски
+    @Column(name = "created_at",
+            insertable = false,
+            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+            nullable = false,
+            updatable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", nullable = false)
+    // Время обновления таски
+    @Column(name = "updated_at",
+            insertable = false,
+            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+            nullable = false)
     private LocalDateTime updatedAt;
+    // Время когда попало в обработку
+    @Column(name = "processing_started_at",
+            insertable = false)
+    private LocalDateTime processingStartedAt;
+
+    @PrePersist
+    void init() {
+        status = TaskStatus.PENDING;
+        count = 0;
+    }
 }

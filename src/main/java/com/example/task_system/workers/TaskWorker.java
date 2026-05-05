@@ -1,7 +1,8 @@
-package com.example.task_system.service;
+package com.example.task_system.workers;
 
 import com.example.task_system.model.Task;
 import com.example.task_system.model.TaskStatus;
+import com.example.task_system.service.TaskService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

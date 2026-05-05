@@ -25,4 +25,13 @@ public interface TaskRepository extends CrudRepository<Task, UUID> {
     );
 
     Optional<Task> findFirstByStatusOrderByCreatedAtAsc(TaskStatus status);
+
+    @Modifying
+    @Query(value = """
+    UPDATE Task t
+    SET t.updatedAt = CURRENT_TIMESTAMP,
+        t.processingStartedAt = CURRENT_TIMESTAMP
+    WHERE t.id = :id AND t.status = :status
+    """)
+    int updateProcessingStartedAt(@Param("id") UUID id, @Param("status") TaskStatus status);
 }
