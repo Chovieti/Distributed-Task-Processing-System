@@ -27,6 +27,9 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
+    @Column(name = "idempotency_key", unique = true, nullable = false)
+    private String idempotencyKey;
+
     @Column(columnDefinition = "TEXT", nullable = false)
     private String payload;
 

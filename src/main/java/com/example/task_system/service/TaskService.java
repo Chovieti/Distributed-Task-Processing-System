@@ -28,10 +28,14 @@ public class TaskService {
     }
 
     @Transactional
-    public void createTask(CreateTaskRequest request) {
-        Task task = new Task();
-        task.setPayload(request.payload());
-        repository.save(task);
+    public UUID createTask(CreateTaskRequest request) {
+        return repository.findByIdempotencyKey(request.idempotencyKey())
+                .orElseGet(() -> {
+                    Task task = new Task();
+                    task.setPayload(request.payload());
+                    task.setIdempotencyKey(request.idempotencyKey());
+                    return repository.save(task);
+                }).getId();
     }
 
     public Task getTask(UUID id) {

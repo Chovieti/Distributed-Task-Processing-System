@@ -80,4 +80,6 @@ public interface TaskRepository extends CrudRepository<Task, UUID> {
             @Param("oldStatus") TaskStatus oldStatus,
             @Param("newStatus") TaskStatus newStatus
     );
+
+    Optional<Task> findByIdempotencyKey(String key);
 }
