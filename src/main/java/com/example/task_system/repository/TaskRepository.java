@@ -26,22 +26,25 @@ public interface TaskRepository extends CrudRepository<Task, UUID> {
             @Param("newStatus")TaskStatus newStatus
     );
 
-    Optional<Task> findFirstByStatusOrderByCreatedAtAsc(TaskStatus status);
-
-    @Modifying
+    // TODO Нужно разобраться как привести к единообразию
+    //  и корректной работе ENUM без костыля в виде передачи их строкового значения
+    // Метод взятия задачи в обработку - атомарно ищет и берёт не позволяя другим потоком перехватить
     @Query(value = """
-    UPDATE Task t
-    SET t.status = :newStatus,
-        t.updatedAt = CURRENT_TIMESTAMP,
-        t.processingStartedAt = CURRENT_TIMESTAMP
-    WHERE t.id = :id AND t.status = :oldStatus
-    """)
-    int claimTask(
-            @Param("id") UUID id,
-            @Param("oldStatus") TaskStatus oldStatus,
-            @Param("newStatus") TaskStatus newStatus
-    );
+    UPDATE tasks
+    SET status = :newStatus,
+        updated_at = CURRENT_TIMESTAMP,
+        processing_started_at = CURRENT_TIMESTAMP
+    WHERE id = (
+        SELECT id FROM tasks
+        WHERE status = :oldStatus
+        ORDER BY created_at
+        LIMIT 1
+        FOR UPDATE SKIP LOCKED
+    ) RETURNING id, status, idempotency_key, payload, retry_count, created_at, updated_at, processing_started_at
+    """, nativeQuery = true)
+    Optional<Task> findAndClaimTask(@Param("oldStatus") String oldStatus, @Param("newStatus") String newStatus);
 
+    // Находит старейшую застрявшую задачу
     @Query(value = """
     SELECT * FROM tasks
     WHERE status = 'PROCESSING'
@@ -52,6 +55,8 @@ public interface TaskRepository extends CrudRepository<Task, UUID> {
     """, nativeQuery = true)
     Optional<Task> findOldestStuckProcessingTask(@Param("minutes") int minutes);
 
+    // Востанавливает задачу отправляя её в PENDING(всегда передается как параметр,
+    // надо поискать способ лучше это задать) и увеличивая retryCount на 1
     @Modifying
     @Query(value = """
     UPDATE Task t
@@ -67,6 +72,7 @@ public interface TaskRepository extends CrudRepository<Task, UUID> {
             @Param("newStatus") TaskStatus newStatus
     );
 
+    // Отправляет задачу в FAIL(всегда передается как параметр) если retryCount слишком большой
     @Modifying
     @Query(value = """
     UPDATE Task t
@@ -81,5 +87,6 @@ public interface TaskRepository extends CrudRepository<Task, UUID> {
             @Param("newStatus") TaskStatus newStatus
     );
 
+    // Находит задачу по ключу идемпотентности(который уникален как id, так что всегда будет максимум 1 задача)
     Optional<Task> findByIdempotencyKey(String key);
 }

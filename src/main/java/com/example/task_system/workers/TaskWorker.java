@@ -11,6 +11,7 @@ import java.util.Random;
 @Component
 public class TaskWorker {
     private final TaskService service;
+    // TODO убрать в будущем, когда будет нормальная работа с тасками
     private final Random rng;
 
     public TaskWorker(TaskService service) {
@@ -22,6 +23,8 @@ public class TaskWorker {
     public void process() {
         Task task = service.findAndClaimNextTask();
         if (task == null) return;
+        // TODO Заменить в будущем на нормальную обработку и проход по всем шагам задачи
+        //  и в зависимости от этого ставить результат
         service.completeTask(task.getId(), (rng.nextBoolean() ? TaskStatus.DONE : TaskStatus.FAILED));
     }
 }

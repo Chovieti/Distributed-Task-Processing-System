@@ -44,17 +44,7 @@ public class TaskService {
 
     @Transactional
     public Task findAndClaimNextTask() {
-        Optional<Task> opt = repository.findFirstByStatusOrderByCreatedAtAsc(TaskStatus.PENDING);
-        if (opt.isEmpty()) return null;
-
-        Task task = opt.get();
-        int update = repository.claimTask(task.getId(), TaskStatus.PENDING, TaskStatus.PROCESSING);
-        if (update == 0) {
-            logger.debug("Failed to claim task {}", task.getId());
-            return null;
-        }
-        task.setStatus(TaskStatus.PROCESSING);
-        return task;
+        return repository.findAndClaimTask(TaskStatus.PENDING.name(), TaskStatus.PROCESSING.name()).orElse(null);
     }
 
     @Transactional
