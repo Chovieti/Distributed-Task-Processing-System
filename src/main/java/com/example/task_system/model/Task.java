@@ -12,7 +12,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "tasks")
+@Table(name = "tasks",
+        indexes = {
+                @Index(name = "idx_tasks_status_created", columnList = "status, created_at"),
+                @Index(name = "idx_tasks_status_processing", columnList = "status, processing_started_at")
+        })
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -27,7 +31,7 @@ public class Task {
     private String payload;
 
     @Column(name = "retry_count", nullable = false)
-    private int count;
+    private int retryCount;
     // Время создания таски
     @Column(name = "created_at",
             insertable = false,
@@ -49,6 +53,6 @@ public class Task {
     @PrePersist
     void init() {
         status = TaskStatus.PENDING;
-        count = 0;
+        retryCount = 0;
     }
 }

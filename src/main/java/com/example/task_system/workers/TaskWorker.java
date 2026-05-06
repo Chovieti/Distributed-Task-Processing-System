@@ -18,7 +18,7 @@ public class TaskWorker {
         rng = new Random();
     }
 
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedDelay = 5000)
     public void process() {
         Task task = service.findAndClaimNextTask();
         if (task == null) return;
