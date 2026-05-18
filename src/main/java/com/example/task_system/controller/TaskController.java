@@ -1,6 +1,9 @@
 package com.example.task_system.controller;
 
 import com.example.task_system.dto.CreateTaskRequest;
+import com.example.task_system.dto.TaskResponse;
+import com.example.task_system.mapper.DomainWeb;
+import com.example.task_system.model.Task;
 import com.example.task_system.service.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +29,8 @@ public class TaskController {
 
     // TODO Нужно будет решить, что будет возвращать контролер
     @GetMapping("/{id}")
-    public void getTask(@PathVariable UUID id) {
-
+    public ResponseEntity<TaskResponse> getTask(@PathVariable UUID id) {
+        Task task = service.getTask(id);
+        return ResponseEntity.ok(DomainWeb.DomainToWeb(task));
     }
 }

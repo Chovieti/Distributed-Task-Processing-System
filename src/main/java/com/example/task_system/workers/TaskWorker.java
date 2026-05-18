@@ -27,4 +27,8 @@ public class TaskWorker {
         //  и в зависимости от этого ставить результат
         service.completeTask(task.getId(), (rng.nextBoolean() ? TaskStatus.DONE : TaskStatus.FAILED));
     }
+
+    public void processOnce() {
+        process();
+    }
 }
